@@ -86,6 +86,12 @@ python -m pytest test_simkit.py -q
 
 The whole repository is one plugin, so a new skill is one directory and no manifest edits:
 
+```bash
+python3 scripts/new_skill.py <skill-name> [--with-references] [--with-scripts]
+```
+
+which stamps out the directory and a frontmatter template:
+
 ```
 skills/<skill-name>/SKILL.md          # required
 skills/<skill-name>/references/       # optional, loaded on demand
@@ -111,6 +117,19 @@ Keep `description` under 1,536 characters (the cap, shared with `when_to_use` if
 Under-triggering is the usual failure, so enumerate situations rather than writing a bare
 category label, and put when-to-use in the description — never only in the body, which
 isn't loaded until after the decision to fire has been made.
+
+Then validate before committing:
+
+```bash
+python3 scripts/new_skill.py --check
+```
+
+`--check` exits non-zero on errors, so it works as a pre-commit hook or CI step. It
+catches the mistakes that otherwise fail *silently* — a description over the cap gets
+truncated with no error, a misspelled frontmatter key is ignored, a skill directory with
+no `SKILL.md` is simply invisible, and a `name:` that disagrees with its directory misleads
+every later reader. It also warns on the softer stuff: descriptions that never say when to
+use the skill, bare category labels, and template placeholders left unedited.
 
 Existing installs pick up new skills on `/plugin marketplace update nelchandler`.
 
