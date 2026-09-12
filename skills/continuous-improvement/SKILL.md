@@ -245,3 +245,16 @@ Read the one matching the phase in front of you rather than all of them.
 | `references/hypothesis-testing.md` | State 3 — choosing the right test, assumptions, power, effect size |
 | `references/improve-control.md` | States 4 and 5 — DOE, Pugh, impact/effort, pilot design, control plans, poka-yoke |
 | `scripts/spckit.py` | Any phase needing limits, capability, yield, or Gage R&R |
+
+## Related skills
+
+- `simulation-engineer` — at **State 4**, when the proposed change is to capacity,
+  staffing, batch size, queue discipline or routing. Those changes are hard to reason
+  about because queues behave non-linearly: adding 20% capacity to a loaded system can cut
+  wait by far more than 20%, and speeding up a non-bottleneck step changes nothing at all.
+  Building a discrete-event model of the current process and running the candidate change
+  against it gives an expected effect, with an interval, before you spend a pilot on it —
+  and the State 2 baseline is exactly the data that model needs. Use it too at **State 5**
+  when the pilot cannot be run at full scale: simulating the change at full volume is
+  better evidence than extrapolating linearly from a small pilot.
+

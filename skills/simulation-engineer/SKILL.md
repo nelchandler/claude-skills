@@ -289,3 +289,16 @@ Read the one that matches the work in front of you rather than all of them.
 | `references/markov-economic.md` | State 4 for regime-switching, CTMC, or Bayesian economic models |
 | `references/experiment-design.md` | State 7/8 — Welch warm-up, replication counts, batch means, CRN, ANOVA, rare events |
 | `scripts/simkit.py` | Any step needing seeding, CIs, convergence, warm-up, or paired comparison |
+
+## Related skills
+
+- `continuous-improvement` — when the goal is improving a process that already exists and
+  is already being measured, rather than evaluating a design that does not exist yet. DMAIC
+  supplies what a simulation study on its own lacks: a validated measurement system, a
+  baseline established before anyone proposed a change, statistical proof of which inputs
+  actually drive the output, and a control plan that keeps the gain from decaying. Reach
+  for it at **State 1** if the objective is really "this process got worse, find out why"
+  — that is an Analyze-phase question, and simulating before you have verified a root cause
+  models your assumptions rather than the system. Reach for it after **State 8** when a
+  winning scenario has to be implemented and held in a real process.
+

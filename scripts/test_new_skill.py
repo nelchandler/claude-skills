@@ -19,7 +19,9 @@ from new_skill import (
     check,
     create,
     description_length,
+    existing_skills,
     parse_frontmatter,
+    related_skills,
     split_frontmatter,
 )
 
@@ -90,7 +92,7 @@ def test_create_makes_a_skill_that_passes_check(tmp_path):
            "also when you see a thing-shaped file lying around in the repo.",
            False, False, skills_dir=tmp_path)
     assert (tmp_path / "my-skill" / "SKILL.md").exists()
-    errors, _ = check(tmp_path)
+    errors, _, _ = check(tmp_path)
     assert errors == []
 
 
@@ -123,7 +125,7 @@ def test_create_rejects_an_over_cap_description(tmp_path):
 def test_template_placeholder_is_flagged_by_check(tmp_path):
     """A scaffolded-but-unedited skill should not pass silently."""
     create("unedited", None, False, False, skills_dir=tmp_path)
-    _, warnings = check(tmp_path)
+    _, warnings, _ = check(tmp_path)
     assert any("placeholder" in w for w in warnings)
 
 
@@ -133,14 +135,14 @@ def test_template_placeholder_is_flagged_by_check(tmp_path):
 
 def test_check_accepts_a_well_formed_skill(tmp_path):
     write_skill(tmp_path, "good-skill", GOOD_FM)
-    errors, warnings = check(tmp_path)
+    errors, warnings, _ = check(tmp_path)
     assert errors == []
     assert warnings == []
 
 
 def test_check_errors_on_missing_skill_md(tmp_path):
     (tmp_path / "empty-dir").mkdir(parents=True)
-    errors, _ = check(tmp_path)
+    errors, _, _ = check(tmp_path)
     assert any("no SKILL.md" in e for e in errors)
 
 
@@ -148,19 +150,19 @@ def test_check_errors_on_missing_frontmatter(tmp_path):
     d = tmp_path / "bare"
     d.mkdir(parents=True)
     (d / "SKILL.md").write_text("# Just a heading\n")
-    errors, _ = check(tmp_path)
+    errors, _, _ = check(tmp_path)
     assert any("no YAML frontmatter" in e for e in errors)
 
 
 def test_check_errors_on_missing_description(tmp_path):
     write_skill(tmp_path, "nameless", "name: nameless\n")
-    errors, _ = check(tmp_path)
+    errors, _, _ = check(tmp_path)
     assert any("no description" in e for e in errors)
 
 
 def test_check_errors_when_description_exceeds_the_cap(tmp_path):
     write_skill(tmp_path, "wordy", f"name: wordy\ndescription: {'x' * (DESCRIPTION_LIMIT + 10)}\n")
-    errors, _ = check(tmp_path)
+    errors, _, _ = check(tmp_path)
     assert any("over the" in e and "cap" in e for e in errors)
 
 
@@ -168,32 +170,32 @@ def test_check_counts_when_to_use_toward_the_cap(tmp_path):
     """Split across both fields, it still exceeds -- that is the whole point of the cap."""
     half = "x" * (DESCRIPTION_LIMIT // 2 + 50)
     write_skill(tmp_path, "split", f"name: split\ndescription: {half}\nwhen_to_use: {half}\n")
-    errors, _ = check(tmp_path)
+    errors, _, _ = check(tmp_path)
     assert any("over the" in e for e in errors)
 
 
 def test_check_errors_on_non_kebab_directory(tmp_path):
     write_skill(tmp_path, "Bad_Name", GOOD_FM.replace("good-skill", "Bad_Name"))
-    errors, _ = check(tmp_path)
+    errors, _, _ = check(tmp_path)
     assert any("kebab-case" in e for e in errors)
 
 
 def test_check_warns_on_name_directory_mismatch(tmp_path):
     write_skill(tmp_path, "actual-dir", GOOD_FM)  # name field says good-skill
-    _, warnings = check(tmp_path)
+    _, warnings, _ = check(tmp_path)
     assert any("name field" in w for w in warnings)
 
 
 def test_check_warns_on_misspelled_frontmatter_key(tmp_path):
     """A typo'd key is ignored silently by Claude Code, so it must be surfaced here."""
     write_skill(tmp_path, "typo", GOOD_FM.replace("name: good-skill", "name: typo") + "descripton: oops\n")
-    _, warnings = check(tmp_path)
+    _, warnings, _ = check(tmp_path)
     assert any("unrecognised frontmatter key" in w for w in warnings)
 
 
 def test_check_warns_on_a_bare_category_label(tmp_path):
     write_skill(tmp_path, "terse", "name: terse\ndescription: Simulation tools\n")
-    _, warnings = check(tmp_path)
+    _, warnings, _ = check(tmp_path)
     assert any("category label" in w for w in warnings)
     assert any("when to use" in w for w in warnings)
 
@@ -201,11 +203,97 @@ def test_check_warns_on_a_bare_category_label(tmp_path):
 def test_check_warns_near_the_cap(tmp_path):
     near = "Use this skill when " + "x" * int(DESCRIPTION_LIMIT * 0.92)
     write_skill(tmp_path, "nearly", f"name: nearly\ndescription: {near}\n")
-    errors, warnings = check(tmp_path)
+    errors, warnings, _ = check(tmp_path)
     assert errors == []
     assert any("near the cap" in w for w in warnings)
 
 
 def test_check_reports_a_missing_skills_directory(tmp_path):
-    errors, _ = check(tmp_path / "nonexistent")
+    errors, _, _ = check(tmp_path / "nonexistent")
     assert any("no skills/ directory" in e for e in errors)
+
+
+# --------------------------------------------------------------------------- #
+# Cross-references between skills
+# --------------------------------------------------------------------------- #
+
+RELATED = "\n## Related skills\n\n- `other-skill` — when the handoff happens\n"
+
+
+def test_related_skills_extracts_referenced_names():
+    text = f"---\n{GOOD_FM}---\n# Body\n{RELATED}"
+    assert related_skills(text) == ["other-skill"]
+
+
+def test_related_skills_is_empty_without_the_section():
+    assert related_skills(f"---\n{GOOD_FM}---\n# Body\n`not-a-reference`\n") == []
+
+
+def test_related_skills_stops_at_the_next_heading():
+    """A backticked name in a later section is not a cross-reference."""
+    text = f"---\n{GOOD_FM}---\n{RELATED}\n## Something else\n\n`unrelated-name`\n"
+    assert related_skills(text) == ["other-skill"]
+
+
+def test_related_skills_deduplicates_in_order():
+    text = ("---\n" + GOOD_FM + "---\n## Related skills\n\n"
+            "- `b-skill` — x\n- `a-skill` — y\n- `b-skill` again\n")
+    assert related_skills(text) == ["b-skill", "a-skill"]
+
+
+def test_check_errors_on_a_dangling_cross_reference(tmp_path):
+    """A pointer to a renamed or deleted skill sends the reader after nothing."""
+    write_skill(tmp_path, "good-skill", GOOD_FM, body=RELATED)
+    errors, _, _ = check(tmp_path)
+    assert any("points at 'other-skill'" in e for e in errors)
+
+
+def test_check_accepts_a_cross_reference_that_resolves(tmp_path):
+    write_skill(tmp_path, "good-skill", GOOD_FM,
+                body="\n## Related skills\n\n- `other-skill` — when\n")
+    write_skill(tmp_path, "other-skill", GOOD_FM.replace("good-skill", "other-skill"),
+                body="\n## Related skills\n\n- `good-skill` — when\n")
+    errors, warnings, links = check(tmp_path)
+    assert errors == []
+    assert links == {"good-skill": ["other-skill"], "other-skill": ["good-skill"]}
+
+
+def test_check_warns_when_a_skill_lists_itself(tmp_path):
+    write_skill(tmp_path, "good-skill", GOOD_FM,
+                body="\n## Related skills\n\n- `good-skill` — circular\n")
+    _, warnings, _ = check(tmp_path)
+    assert any("lists itself" in w for w in warnings)
+
+
+def test_check_warns_on_a_missing_section_only_when_siblings_exist(tmp_path):
+    """A lone skill has nothing to relate to, so the nudge would be noise."""
+    write_skill(tmp_path, "only-skill", GOOD_FM.replace("good-skill", "only-skill"))
+    _, warnings, _ = check(tmp_path)
+    assert not any("Related skills" in w for w in warnings)
+
+    write_skill(tmp_path, "second-skill", GOOD_FM.replace("good-skill", "second-skill"))
+    _, warnings, _ = check(tmp_path)
+    assert sum("no 'Related skills' section" in w for w in warnings) == 2
+
+
+def test_existing_skills_ignores_directories_without_skill_md(tmp_path):
+    write_skill(tmp_path, "real-skill", GOOD_FM.replace("good-skill", "real-skill"))
+    (tmp_path / "not-a-skill").mkdir()
+    assert existing_skills(tmp_path) == ["real-skill"]
+
+
+def test_scaffold_lists_existing_skills_for_the_new_one(tmp_path):
+    """Writing the pointer is easiest while you still remember the relationship."""
+    write_skill(tmp_path, "first-skill", GOOD_FM.replace("good-skill", "first-skill"))
+    create("second-skill", None, False, False, skills_dir=tmp_path)
+    text = (tmp_path / "second-skill" / "SKILL.md").read_text()
+    assert "## Related skills" in text
+    assert related_skills(text) == ["first-skill"]
+
+
+def test_scaffold_says_so_when_there_are_no_siblings(tmp_path):
+    create("lonely-skill", None, False, False, skills_dir=tmp_path)
+    text = (tmp_path / "lonely-skill" / "SKILL.md").read_text()
+    assert "## Related skills" in text
+    assert related_skills(text) == []
+    assert "No other skills yet" in text

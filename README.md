@@ -118,7 +118,33 @@ Under-triggering is the usual failure, so enumerate situations rather than writi
 category label, and put when-to-use in the description — never only in the body, which
 isn't loaded until after the decision to fire has been made.
 
-Then validate before committing:
+### Cross-references
+
+Skills that hand off to each other should say so, in a `## Related skills` section at the
+end of `SKILL.md`. A skill's body is only loaded once that skill fires, so this is how a
+project already underway in one skill discovers that another one covers the next step —
+nothing else surfaces it.
+
+The scaffold lists every existing skill in that section so the pointer gets written while
+you still remember the relationship; delete the lines that aren't genuinely related.
+
+Say **when** the handoff happens, not just that the other skill exists:
+
+```markdown
+## Related skills
+
+- `simulation-engineer` — at **State 4**, when the proposed change is to capacity,
+  staffing or queue discipline. Those effects are non-linear and hard to reason about,
+  so modelling the change beats guessing at it before a pilot.
+```
+
+`--check` treats a pointer to a skill that doesn't exist as an **error** — a dangling
+reference sends the reader after nothing, and a rename would otherwise break it silently.
+It prints the cross-reference graph so you can see what points where.
+
+### Validate
+
+Before committing:
 
 ```bash
 python3 scripts/new_skill.py --check

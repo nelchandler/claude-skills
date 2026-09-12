@@ -81,7 +81,21 @@ each is worth reading, so they load on demand rather than all at once:>
 | File | Read it when |
 |---|---|
 | `references/example.md` | <the situation that calls for it> |
+
+## Related skills
+{related}
 '''
+
+RELATED_NONE = """
+<No other skills yet. When you add one that this hands off to, list it here
+saying WHEN to reach for it -- the specific step, not just that it exists.>
+"""
+
+RELATED_HEADER = """
+<Delete any line below that is not genuinely related. For the ones you keep,
+replace the placeholder with the specific moment this skill hands off -- a
+pointer that says when beats one that says what.>
+"""
 
 DESCRIPTION_PLACEHOLDER = (
     "<What this skill does, in one or two sentences.> "
@@ -146,6 +160,35 @@ def parse_frontmatter(text: str) -> dict:
     return out
 
 
+def existing_skills(skills_dir: Path = SKILLS_DIR) -> list[str]:
+    """Skill directory names that actually carry a SKILL.md."""
+    if not skills_dir.is_dir():
+        return []
+    return sorted(d.name for d in skills_dir.iterdir()
+                  if d.is_dir() and (d / "SKILL.md").exists())
+
+
+def related_skills(text: str) -> list[str]:
+    """Skill names referenced from a '## Related skills' section.
+
+    A pointer to a skill that no longer exists is worse than no pointer: it sends
+    the reader after something that is not there, and nothing else in the repo
+    would ever notice the rename that broke it.
+    """
+    m = re.search(r"^##+\s*Related skills\s*$(.*?)(?=^##\s|\Z)",
+                  text, re.M | re.S)
+    if not m:
+        return []
+    body = m.group(1)
+    names = re.findall(r"`([a-z0-9]+(?:-[a-z0-9]+)*)`", body)
+    seen, out = set(), []
+    for n in names:
+        if n not in seen:
+            seen.add(n)
+            out.append(n)
+    return out
+
+
 def description_length(fm: dict) -> int:
     """Characters counted against the cap: description plus when_to_use."""
     parts = [str(fm.get(k, "")) for k in ("description", "when_to_use")]
@@ -177,9 +220,20 @@ def create(name: str, description: str | None, with_scripts: bool,
         )
     title = name.replace("-", " ").title()
 
+    # List the skills already here, so the pointer gets written while you still
+    # remember how the new skill relates to them. Retrofitting cross-references
+    # across a grown collection is the kind of tidying that never happens.
+    siblings = existing_skills(skills_dir)
+    if siblings:
+        related = RELATED_HEADER + "".join(
+            f"\n- `{s}` — <when this skill's work hands off to {s}>" for s in siblings
+        ) + "\n"
+    else:
+        related = RELATED_NONE
+
     target.mkdir(parents=True)
     (target / "SKILL.md").write_text(
-        TEMPLATE.format(name=name, description=desc, title=title)
+        TEMPLATE.format(name=name, description=desc, title=title, related=related)
     )
     if with_references:
         (target / "references").mkdir()
@@ -194,17 +248,19 @@ def create(name: str, description: str | None, with_scripts: bool,
 # Check
 # --------------------------------------------------------------------------- #
 
-def check(skills_dir: Path = SKILLS_DIR) -> tuple[list[str], list[str]]:
-    """Validate every skill. Returns (errors, warnings)."""
+def check(skills_dir: Path = SKILLS_DIR) -> tuple[list[str], list[str], dict[str, list[str]]]:
+    """Validate every skill. Returns (errors, warnings, cross-reference graph)."""
     errors: list[str] = []
     warnings: list[str] = []
+    links: dict[str, list[str]] = {}
 
     if not skills_dir.is_dir():
-        return [f"no skills/ directory at {skills_dir}"], []
+        return [f"no skills/ directory at {skills_dir}"], [], {}
 
     dirs = sorted(d for d in skills_dir.iterdir() if d.is_dir())
     if not dirs:
         warnings.append("skills/ is empty")
+    names = set(existing_skills(skills_dir))
 
     for d in dirs:
         rel = d.name
@@ -265,7 +321,23 @@ def check(skills_dir: Path = SKILLS_DIR) -> tuple[list[str], list[str]]:
                 "a misspelled key is ignored silently"
             )
 
-    return errors, warnings
+        refs = related_skills(text)
+        links[rel] = refs
+        for ref in refs:
+            if ref == rel:
+                warnings.append(f"{rel}: lists itself under Related skills")
+            elif ref not in names:
+                errors.append(
+                    f"{rel}: Related skills points at '{ref}', which is not a skill "
+                    "here -- a dangling pointer sends the reader after nothing"
+                )
+        if len(names) > 1 and not refs and "## Related skills" not in text:
+            warnings.append(
+                f"{rel}: no 'Related skills' section. Skills that hand off to each "
+                "other are only discoverable if they say so"
+            )
+
+    return errors, warnings, links
 
 
 # --------------------------------------------------------------------------- #
@@ -286,12 +358,17 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
 
     if args.check:
-        errors, warnings = check()
+        errors, warnings, links = check()
         for w in warnings:
             print(f"warning: {w}")
         for e in errors:
             print(f"ERROR:   {e}", file=sys.stderr)
-        n = len([d for d in SKILLS_DIR.iterdir() if d.is_dir()]) if SKILLS_DIR.is_dir() else 0
+        n = len(existing_skills())
+        if links and any(links.values()):
+            print("\ncross-references:")
+            for skill, refs in sorted(links.items()):
+                if refs:
+                    print(f"  {skill} -> {', '.join(refs)}")
         if errors:
             print(f"\n{len(errors)} error(s) across {n} skill(s).", file=sys.stderr)
             return 1
