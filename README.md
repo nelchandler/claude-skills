@@ -7,17 +7,17 @@ marketplace so they work in every project rather than one repo.
 
 ```bash
 /plugin marketplace add nelchandler/claude-skills
-/plugin install simulation-engineer@nelchandler-skills
+/plugin install simulation-engineer@skills
 ```
 
 Or non-interactively:
 
 ```bash
 claude plugin marketplace add nelchandler/claude-skills
-claude plugin install simulation-engineer@nelchandler-skills
+claude plugin install simulation-engineer@skills
 ```
 
-Update later with `/plugin marketplace update nelchandler-skills`.
+Update later with `/plugin marketplace update skills`.
 
 ## Skills
 
