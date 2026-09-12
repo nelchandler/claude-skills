@@ -1,14 +1,14 @@
 {
-  "name": "skills",
+  "name": "nelchandler",
   "owner": {
     "name": "nelchandler",
     "url": "https://github.com/nelchandler"
   },
   "plugins": [
     {
-      "name": "simulation-engineer",
-      "source": "./plugins/simulation-engineer",
-      "description": "Operations Research and simulation engineering agent: an 8-step simulation lifecycle with statistical rigor, for discrete-event, agent-based, system-dynamics and Markov/Bayesian models."
+      "name": "skills",
+      "source": "./",
+      "description": "A collection of Claude Code skills. Currently: simulation-engineer, an Operations Research agent for stochastic simulation modelling."
     }
   ]
 }

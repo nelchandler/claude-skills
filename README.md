@@ -7,17 +7,17 @@ marketplace so they work in every project rather than one repo.
 
 ```bash
 /plugin marketplace add nelchandler/claude-skills
-/plugin install simulation-engineer@skills
+/plugin install skills@nelchandler
 ```
 
 Or non-interactively:
 
 ```bash
 claude plugin marketplace add nelchandler/claude-skills
-claude plugin install simulation-engineer@skills
+claude plugin install skills@nelchandler
 ```
 
-Update later with `/plugin marketplace update skills`.
+Update later with `/plugin marketplace update nelchandler`.
 
 ## Skills
 
@@ -78,15 +78,41 @@ known autocorrelation, stream independence under changed draw order, and common 
 numbers where the variance reduction is analytically predictable.
 
 ```bash
-cd plugins/simulation-engineer/skills/simulation-engineer/scripts
+cd skills/simulation-engineer/scripts
 python -m pytest test_simkit.py -q
 ```
 
 ## Adding another skill
 
-Drop it at `plugins/<name>/skills/<name>/SKILL.md` with a `.claude-plugin/plugin.json`
-beside it, then add an entry to the `plugins` array in `.claude-plugin/marketplace.json`.
-Installers pick it up on the next `/plugin marketplace update`.
+The whole repository is one plugin, so a new skill is one directory and no manifest edits:
+
+```
+skills/<skill-name>/SKILL.md          # required
+skills/<skill-name>/references/       # optional, loaded on demand
+skills/<skill-name>/scripts/          # optional
+```
+
+The **directory name** is what makes `/<skill-name>` work; the `name:` field in
+frontmatter is display-only. The `description:` is what Claude reads to decide whether to
+invoke the skill, so it carries the whole triggering burden:
+
+```yaml
+---
+name: skill-name
+description: >-
+  <what it does, 1-2 sentences>
+  Use this skill whenever <concrete situations>.
+  Use it too when <indirect signals: symptoms, filenames, library names> even if
+  the user never says the obvious keyword.
+---
+```
+
+Keep `description` under 1,536 characters (the cap, shared with `when_to_use` if used).
+Under-triggering is the usual failure, so enumerate situations rather than writing a bare
+category label, and put when-to-use in the description — never only in the body, which
+isn't loaded until after the decision to fire has been made.
+
+Existing installs pick up new skills on `/plugin marketplace update nelchandler`.
 
 ## License
 
