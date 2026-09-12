@@ -1,0 +1,14 @@
+{
+  "name": "nelchandler-skills",
+  "owner": {
+    "name": "nelchandler",
+    "url": "https://github.com/nelchandler"
+  },
+  "plugins": [
+    {
+      "name": "simulation-engineer",
+      "source": "./plugins/simulation-engineer",
+      "description": "Operations Research and simulation engineering agent: an 8-step simulation lifecycle with statistical rigor, for discrete-event, agent-based, system-dynamics and Markov/Bayesian models."
+    }
+  ]
+}

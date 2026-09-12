@@ -1,0 +1,20 @@
+{
+  "name": "simulation-engineer",
+  "displayName": "Simulation Engineer",
+  "version": "1.0.0",
+  "description": "Designs, codes, verifies, validates and runs stochastic simulation models following the standard 8-step simulation lifecycle, with distribution fitting, warm-up detection, replication sizing from a target confidence interval, variance reduction and scenario comparison.",
+  "author": {
+    "name": "nelchandler",
+    "url": "https://github.com/nelchandler"
+  },
+  "repository": "https://github.com/nelchandler/claude-skills",
+  "license": "MIT",
+  "keywords": [
+    "simulation",
+    "operations-research",
+    "monte-carlo",
+    "discrete-event",
+    "agent-based",
+    "statistics"
+  ]
+}
