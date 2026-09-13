@@ -16,6 +16,7 @@ import pytest
 import new_skill
 from new_skill import (
     DESCRIPTION_LIMIT,
+    PORTABLE_LIMIT,
     check,
     create,
     description_length,
@@ -200,12 +201,24 @@ def test_check_warns_on_a_bare_category_label(tmp_path):
     assert any("when to use" in w for w in warnings)
 
 
-def test_check_warns_near_the_cap(tmp_path):
-    near = "Use this skill when " + "x" * int(DESCRIPTION_LIMIT * 0.92)
-    write_skill(tmp_path, "nearly", f"name: nearly\ndescription: {near}\n")
+def test_check_warns_between_the_portable_and_hard_caps(tmp_path):
+    """1024 is what .skill packaging allows; 1536 is what Claude Code allows.
+
+    A description in that gap works locally and then fails at package time, which
+    is the worst place to find out -- so it is worth flagging while writing.
+    """
+    mid = "Use this skill when " + "x" * (PORTABLE_LIMIT + 100)
+    write_skill(tmp_path, "midway", f"name: midway\ndescription: {mid}\n")
     errors, warnings, _ = check(tmp_path)
     assert errors == []
-    assert any("near the cap" in w for w in warnings)
+    assert any("cannot be packaged" in w for w in warnings)
+
+
+def test_check_is_quiet_below_the_portable_cap(tmp_path):
+    fine = "Use this skill when " + "x" * 500
+    write_skill(tmp_path, "fine", f"name: fine\ndescription: {fine}\n")
+    _, warnings, _ = check(tmp_path)
+    assert not any("packaged" in w or "cap" in w for w in warnings)
 
 
 def test_check_reports_a_missing_skills_directory(tmp_path):
