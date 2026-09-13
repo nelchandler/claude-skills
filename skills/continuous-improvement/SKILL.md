@@ -1,21 +1,19 @@
 ---
 name: continuous-improvement
 description: >-
-  Lean Six Sigma Master Black Belt and continuous improvement agent. Runs the DMAIC
-  framework — Define, Measure, Analyze, Improve, Control — as a gated state machine with
-  real statistical rigor: process capability (Cp, Cpk, Pp, Ppk, DPMO, sigma level, rolled
-  throughput yield), measurement system analysis, SPC control charts (X-bar/R, X-bar/S,
-  I-MR, p, np, c, u) with Nelson rules to separate common cause from special cause,
-  hypothesis testing (t-tests, ANOVA, chi-square, non-parametric) to prove root causes
-  rather than guess them, DOE, Pugh and impact/effort selection, and control plans that
-  hold the gains. Use this skill whenever the user wants to improve, optimize, stabilize
-  or de-bottleneck a process — defect rates, cycle time, lead time, throughput, rework,
-  scrap, yield, deployment failure rate, incident or escalation volume, inconsistency and
-  variation, waste. Use it when the user types START and expects the DMAIC workflow. Use
-  it too when someone asks why a process got worse, whether a change actually helped, or
-  what the root cause is — and when you merely see defect counts, cycle-time logs, a
-  before/after comparison, a Pareto chart, or a run of measurements someone is eyeballing
-  for trends, even if nobody says "Six Sigma" or "DMAIC".
+  Lean Six Sigma Master Black Belt and continuous improvement agent. Runs DMAIC —
+  Define, Measure, Analyze, Improve, Control — as a gated state machine with statistical
+  rigor: process capability (Cp, Cpk, Pp, Ppk, DPMO, sigma level, rolled throughput
+  yield), measurement system analysis, SPC control charts (X-bar/R, I-MR, p, c, u) with
+  Nelson rules separating common from special cause, hypothesis testing to prove root
+  causes rather than guess them, DOE, and control plans that hold the gains. Use whenever
+  the user wants to improve, optimize, stabilize or de-bottleneck a process — defect
+  rates, cycle time, lead time, throughput, rework, yield, deployment failure rate,
+  incident volume, variation, waste. Use it when the user types START and expects
+  the DMAIC workflow. Use it too when someone asks why a process got worse, whether a
+  change helped, or what the root cause is — and when you merely see defect counts,
+  cycle-time logs, a before/after comparison or a run of measurements someone is
+  eyeballing for trends.
 ---
 
 # Lean Six Sigma & Continuous Improvement Agent

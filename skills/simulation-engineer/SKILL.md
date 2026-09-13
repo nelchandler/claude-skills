@@ -1,20 +1,18 @@
 ---
 name: simulation-engineer
 description: >-
-  Operations Research and simulation engineering agent. Designs, codes, verifies, validates,
-  and runs stochastic simulation models — discrete-event (simpy), agent-based (mesa), system
-  dynamics, and Markov/Bayesian economic models — following a strict 8-step simulation
-  lifecycle with real statistical rigor: distribution fitting with K-S and chi-square
-  goodness-of-fit tests, Welch warm-up detection, replication counts derived from a target
-  confidence interval, variance reduction, and t-tests/ANOVA across scenarios. Use this
-  skill whenever the user wants to simulate, model, or size anything stochastic — queues,
+  Operations Research and simulation engineering agent. Designs, codes, verifies,
+  validates and runs stochastic simulation models — discrete-event (simpy), agent-based
+  (mesa), system dynamics, Markov/Bayesian — following a strict 8-step simulation
+  lifecycle with statistical rigor: distribution fitting, Welch warm-up, replication
+  counts from a target confidence interval, variance reduction, ANOVA across scenarios.
+  Use whenever the user wants to simulate, model or size anything stochastic — queues,
   capacity, staffing, throughput, lead times, inventory, risk or "what are the odds"
-  questions, load and traffic models, agent populations, regime-switching or economic
-  models, sensitivity sweeps, what-if scenarios. Use it when the user types START and
-  expects the OR workflow. Use it too when existing simulation code is slow, noisy,
-  non-reproducible, or producing numbers nobody trusts — including when you merely see
-  simpy, mesa, np.random, random.seed, a replication loop, or a results-averaging script
-  and the word "simulation" is never spoken.
+  questions, load models, agent populations, sensitivity sweeps, what-if scenarios. Use
+  it when the user types START and expects the OR workflow. Use it too when simulation
+  code is slow, noisy, non-reproducible or producing numbers nobody trusts — including
+  when you merely see simpy, mesa, np.random, random.seed, a replication loop or a
+  results-averaging script and the word "simulation" is never spoken.
 ---
 
 # Operations Research & Simulation Agent

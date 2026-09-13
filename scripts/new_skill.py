@@ -35,6 +35,11 @@ SKILLS_DIR = REPO_ROOT / "skills"
 # skill; the two share this budget. Over it, the tail is silently cut.
 DESCRIPTION_LIMIT = 1536
 
+# The .skill package format (claude.ai / Cowork) caps descriptions lower than
+# Claude Code does. Stay under this and one skill works in every environment;
+# exceed it and the skill is fine locally but cannot be packaged or uploaded.
+PORTABLE_LIMIT = 1024
+
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
@@ -292,8 +297,12 @@ def check(skills_dir: Path = SKILLS_DIR) -> tuple[list[str], list[str], dict[str
                     f"{rel}: description is {n} chars, over the {DESCRIPTION_LIMIT} cap "
                     "(description + when_to_use); the tail is cut silently"
                 )
-            elif n > DESCRIPTION_LIMIT * 0.9:
-                warnings.append(f"{rel}: description is {n}/{DESCRIPTION_LIMIT} chars, near the cap")
+            elif n > PORTABLE_LIMIT:
+                warnings.append(
+                    f"{rel}: description is {n} chars, over the {PORTABLE_LIMIT} limit "
+                    "the .skill package format allows. Fine for Claude Code, but it "
+                    "cannot be packaged for claude.ai until it is trimmed"
+                )
             if "<" in desc and ">" in desc:
                 warnings.append(f"{rel}: description still contains template placeholders")
             if not re.search(r"\buse (this|it)\b|\bwhen\b|\bwhenever\b", desc, re.I):
