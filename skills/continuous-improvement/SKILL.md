@@ -256,3 +256,9 @@ Read the one matching the phase in front of you rather than all of them.
   when the pilot cannot be run at full scale: simulating the change at full volume is
   better evidence than extrapolating linearly from a small pilot.
 
+- `no-slop-coding` — when the process under improvement is software delivery and the defect
+  is in the code or the review itself. It supplies the operational definition that a
+  **State 2** data collection plan otherwise lacks: "review finding" is not measurable
+  until you can name the categories, and its catalog is that list. Reach for it at **State
+  4** when the countermeasure is a lint rule, a review checklist or a CI gate, since a
+  control that fires on correct code gets ignored and stops controlling anything.
