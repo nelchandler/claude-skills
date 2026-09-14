@@ -1,13 +1,14 @@
 {
   "name": "skills",
   "displayName": "nelchandler's skills",
-  "version": "1.1.0",
-  "description": "A collection of Claude Code skills. Currently: simulation-engineer, an Operations Research and simulation engineering agent that runs the standard 8-step simulation lifecycle for discrete-event, agent-based, system-dynamics and Markov models.",
+  "version": "1.2.0",
+  "description": "Claude Code skills: simulation-engineer (Operations Research and stochastic simulation), continuous-improvement (Lean Six Sigma DMAIC), and no-slop-coding (writing and reviewing code without the filler).",
   "author": {
     "name": "nelchandler",
     "url": "https://github.com/nelchandler"
   },
   "repository": "https://github.com/nelchandler/claude-skills",
   "license": "MIT",
-  "keywords": ["skills", "simulation", "operations-research", "statistics"]
+  "keywords": ["skills", "simulation", "operations-research",
+               "statistics", "code-review", "code-quality"]
 }

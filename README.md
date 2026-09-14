@@ -82,6 +82,81 @@ cd skills/simulation-engineer/scripts
 python -m pytest test_simkit.py -q
 ```
 
+### continuous-improvement
+
+A Lean Six Sigma agent that runs DMAIC — Define, Measure, Analyze, Improve, Control — as a
+gated state machine: process capability, measurement system analysis, SPC control charts
+with Nelson rules, hypothesis testing to prove root causes rather than guess them, and
+control plans that hold the gains. Bundles `spckit.py` for the limits, capability indices
+and Gage R&R that are tedious to look up and easy to transcribe wrongly.
+
+**Trigger it** with any process you want to improve or stabilise — defect rates, cycle
+time, lead time, throughput, rework, yield, deployment failure rate, incident volume — or
+ask why a process got worse, or whether a change actually helped.
+
+### no-slop-coding
+
+Writes and reviews code a senior engineer would sign off on, and strips what makes
+generated diffs recognisable: speculative abstractions, one-caller wrappers, `except
+Exception: pass`, comments restating the code, duplicated helpers, compat shims nobody
+asked for, tests that cannot fail, `SUMMARY.md` files.
+
+The reason it is a skill rather than a style guide: the default pull when generating code
+is toward *adding* — another guard, another wrapper, another file — and each addition looks
+like diligence in isolation. Together they are why a 20-line change arrives as a 400-line
+diff. So the working question for every line is not "could this help?" but "what breaks if
+I delete it?"
+
+It also says where verbosity is *correct* — error messages, public API contracts, test
+names, validation at a trust boundary — because over-correcting into terseness is its own
+failure.
+
+| Reference | Contents |
+|---|---|
+| `slop-catalog.md` | The patterns one by one, with before/after: parallel implementations, speculative generality, defensive swallowing, narration, docstring echoes, compat shims, `utils.py`, tests that cannot fail |
+| `comments-docs-naming.md` | Which comments earn their place, when a docstring is worth writing, naming rules that survive contact with real code |
+| `errors-and-tests.md` | Catch what you can handle where you can handle it; how to tell a real test from a green one |
+| `review-pass.md` | Reading a diff (yours or someone else's), severity levels for review comments, receiving feedback |
+
+**Trigger it** before writing, refactoring or reviewing anything, and again before
+committing — or by saying slop, bloat, over-engineered, clean this up, make it idiomatic,
+or asking for a review of a diff.
+
+#### Bundled tooling
+
+`skills/no-slop-coding/scripts/slopcheck.py` finds the mechanical cases so the review pass
+can spend its attention on judgement:
+
+```bash
+python3 slopcheck.py --diff              # added lines vs HEAD, plus diff shape
+python3 slopcheck.py src/ tests/         # a whole tree
+```
+
+Findings (exit 1): swallowed exceptions, definitions referenced nowhere else, compat shims,
+duplicated blocks, commented-out code, debugger statements, scaffolding filenames.
+Advisories (exit 0): comments restating their line, unowned `TODO`s. Standard library only,
+no dependencies.
+
+The precision work is where the value is — a detector that fires on good code gets ignored,
+and the one real finding goes with the noise. So `breakpoint()` inside a string literal is
+not a debugger statement, prose that mentions a `TODO` is not one, a document *describing*
+a pattern is not an instance of it, and English rarely parses as Python, which is what
+separates a commented-out call from a comment. A clean run is still not a clean diff:
+nothing here detects a one-caller wrapper or a test that cannot fail.
+
+#### Tests
+
+65 tests, mostly *negative* — the correct version of each pattern has to stay silent — with
+every check pinned by both a hit and a near-miss. The suite is mutation-tested: nine
+deliberate breakages of the detector (inverting the broad-except test, dropping the
+new-file flag, unanchoring the `TODO` pattern, shrinking the duplicate window, removing the
+diff filter) are each caught by a failing test.
+
+```bash
+cd skills/no-slop-coding/scripts
+python -m pytest test_slopcheck.py -q
+```
+
 ## Adding another skill
 
 The whole repository is one plugin, so a new skill is one directory and no manifest edits:

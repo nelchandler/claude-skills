@@ -300,3 +300,9 @@ Read the one that matches the work in front of you rather than all of them.
   models your assumptions rather than the system. Reach for it after **State 8** when a
   winning scenario has to be implemented and held in a real process.
 
+- `no-slop-coding` — at **State 4**, when the conceptual model becomes code. A simulation
+  script is unusually prone to defensive slop, because a stochastic run that raises looks
+  like a bug in the model: the `except Exception: continue` that keeps a replication loop
+  alive discards exactly the replications that would have told you the model is wrong, and
+  prints a mean over whatever survived. Reach for it before any handoff of model code, and
+  at **State 5** when verification means reading your own implementation adversarially.
